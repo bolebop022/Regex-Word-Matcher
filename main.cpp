@@ -55,7 +55,7 @@ QStringList processFileToWords(QString& filePath, QTextStream& out)
 
     }
     else {
-        out << "File does not exist.";
+        out << "File does not exist." << Qt::endl;
         return lines;
     }
 
@@ -97,7 +97,7 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
         {
             // Step 1 get the file path
             QString filePath = args[i];
-            qDebug() << filePath;
+           /* qDebug() << filePath;*/
             for(auto word : processFileToWords(filePath,out))
             {
                 qDebug() << word;
@@ -121,18 +121,27 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
                 }
 
             }
-            qDebug() << wordCountA;
+
+            out << "***" << QFileInfo(filePath).fileName() << "***" << Qt::endl;
+            if (flagA) out << "Number of words longer than 4 letters that start with a capital: " << wordCountA << Qt::endl;
+            if (flagB) out << "Number of hyphenated words: " << wordCountB << Qt::endl;
+            if (flagC) out << "Number of words that start and end on the same letter: " << wordCountC << Qt::endl;
+            if (flagD) out << "Number of words that do not start with a vowel: " << wordCountD << Qt::endl;
+            out << Qt::endl;
+
+            /*qDebug() << wordCountA;
             qDebug() << wordCountB;
             qDebug() << wordCountC;
-            qDebug() << wordCountD;
+            qDebug() << wordCountD;*/
         }
 
     }
 
-    out << (flagA ? "Flag A on": "Flag A off") << Qt::endl;
-    out << (flagB ? "Flag B on": "Flag B off") << Qt::endl;
-    out << (flagC ? "Flag C on": "Flag C off") << Qt::endl;
-    out << (flagD ? "Flag D on": "Flag D off") << Qt::endl;
+
+    /*qDebug() << (flagA ? "Flag A on": "Flag A off") << Qt::endl;
+    qDebug() << (flagB ? "Flag B on": "Flag B off") << Qt::endl;
+    qDebug() << (flagC ? "Flag C on": "Flag C off") << Qt::endl;
+    qDebug() << (flagD ? "Flag D on": "Flag D off") << Qt::endl;*/
 }
 
 void printHelpMessage()

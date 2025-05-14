@@ -1,0 +1,4 @@
+"Count all these words please."
+Add these words as well.
+These other words have 'inverted commas'.
+Make sure those are properly removed.
