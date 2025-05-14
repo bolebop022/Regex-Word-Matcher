@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QStringList args= QCoreApplication::arguments();
-    int argumentCounter = 1;
+
     bool flagA = false, flagB = false, flagC = false, flagD = false;
 
     if(args.size() < 2)
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
        flagA = true, flagB = true, flagC = true, flagD = true;
     }
 
-    determineCountingCriteria(args,flagA, flagB, flagC, flagD, argumentCounter);
+    determineCountingCriteria(args,flagA, flagB, flagC, flagD);
 
     QRegularExpression regexA("\b[A-Z][a-zA-Z]{4,}\b");
 
@@ -36,22 +36,33 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
-QStringList fileProcessor(QFile& file, QTextStream& out)
+QStringList fileProcessor(QString& filePath, QTextStream& out)
 {
     QStringList lines;
-    if(!(file.open(QIODevice::ReadOnly | QIODevice::Text)))
-    {
-        out << "Cannot open file:" << file.errorString();
+    QFile file(filePath);
+     // Step 2 check if the file name exists
+    if(file.exists()){
+        // Step 3 Read the file
+        if(!(file.open(QIODevice::ReadOnly | QIODevice::Text)))
+        {
+            out << "Cannot open file:" << file.errorString();
+            return lines;
+        }
+
+        QTextStream in(&file);
+        while(!in.atEnd())
+        {
+            lines << in.readLine();
+            qDebug() << lines;
+        }
+        return lines;
+
+    }
+    else {
+        out << "File does not exist.";
         return lines;
     }
 
-    QTextStream in(&file);
-    while(!in.atEnd())
-    {
-        lines << in.readLine();
-        qDebug() << lines;
-    }
-    return lines;
 }
 
 void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD)
@@ -80,16 +91,7 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
             // Step 1 get the file path
             QString filePath = args[i];
             qDebug() << filePath;
-            // Step 2 check if the file name exists
-            QFile file(filePath);
-            if(file.exists()){
-                // Step 3 Read the file
-                fileProcessor(file,out);
-            }
-            else {
-                out << "File does not exist.";
-                return;
-            }
+            fileProcessor(filePath,out);
         }
 
     }
