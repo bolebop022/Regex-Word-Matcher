@@ -1,29 +1,28 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QFile>
+#include <QDir>
 
 void printHelpMessage();
-void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD);
-QTextStream fileProcessor();
+void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD, int &argumentCounter);
+void fileProcessor(int &argumentCounter, QStringList &args, QTextStream &text);
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QStringList args;
-    for (int i = 0; i < argc; ++i) {
-        args.append((argv[i]));
-    }
+    QStringList args= QCoreApplication::arguments();
+    int argumentCounter = 1;
+    bool flagA = false, flagB = false, flagC = false, flagD = false;
 
     if(args.size() < 2)
     {
        printHelpMessage();
+       flagA = true, flagB = true, flagC = true, flagD = true;
     }
 
-
-
-    bool flagA = false, flagB = false, flagC = false, flagD = false;
-    determineCountingCriteria(args,flagA, flagB, flagC, flagD);
+    determineCountingCriteria(args,flagA, flagB, flagC, flagD, argumentCounter);
 
     QRegularExpression regexA("\b[A-Z][a-zA-Z]{4,}\b");
 
@@ -37,15 +36,18 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
-QTextStream fileProcessor(int &argumentCounter, QStringList args)
+void fileProcessor(int &argumentCounter, QStringList &args, QTextStream &text)
 {
+    QFile file("");
 
 }
 
-void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD)
+void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD, int &argumentCounter)
 {
     QRegularExpression flagRegex("^-[a-d]+$");
     QRegularExpressionMatch flagMatch;
+    QTextStream out(stdout);
+    QStringList lines;
 
     for(int i = 1; i < args.size(); ++i)
     {
@@ -60,10 +62,38 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
                 flagC = true;
             if (args[i].contains("d"))
                 flagD = true;
+            ++argumentCounter;
         }
+        else if (!(args[i].startsWith("-")))
+        {
+            // Step 1 get the file path
+            QString filePath = args[i];
+            qDebug() << filePath;
+            qDebug() << QDir::currentPath();
+            // Step 2 check if the file name exists
+            QFile file(filePath);
+            if(file.exists()){
+                // Step 3 Read the file
+                if(!(file.open(QIODevice::ReadOnly | QIODevice::Text)))
+                {
+                    out << "Cannot open file:" << file.errorString();
+                    return;
+                }
+
+                QTextStream in(&file);
+                while(!in.atEnd())
+                {
+                    lines << in.readLine();
+                }
+            }
+            else {
+                out << "File does not exist.";
+                return;
+            }
+        }
+
     }
 
-    QTextStream out(stdout);
     out << (flagA ? "Flag A on": "Flag A off") << Qt::endl;
     out << (flagB ? "Flag B on": "Flag B off") << Qt::endl;
     out << (flagC ? "Flag C on": "Flag C off") << Qt::endl;
