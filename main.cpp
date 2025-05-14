@@ -6,7 +6,7 @@
 
 void printHelpMessage();
 void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD);
-QStringList fileProcessor(QFile& file, QTextStream& out);
+QStringList processFileToWords(QFile& file, QTextStream& out);
 
 int main(int argc, char *argv[])
 {
@@ -24,19 +24,11 @@ int main(int argc, char *argv[])
 
     determineCountingCriteria(args,flagA, flagB, flagC, flagD);
 
-    QRegularExpression regexA("\b[A-Z][a-zA-Z]{4,}\b");
-
-    int counterA = 0;
-    if(flagA)
-    {
-
-    }
-
 
     return a.exec();
 }
 
-QStringList fileProcessor(QString& filePath, QTextStream& out)
+QStringList processFileToWords(QString& filePath, QTextStream& out)
 {
     QStringList lines;
     QStringList words;
@@ -77,8 +69,15 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
     QStringList lines;
 
     QRegularExpression regexA("\\b[A-Z][a-zA-Z]{4,}\\b");
+    QRegularExpression regexB("\\b[a-z]+-[a-z]+\\b");
+    QRegularExpression regexC("\\b([a-z])([a-z\\-]*)\\1\\b", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression regexD("\\b^[^aeiouAEIOU][^\\s]*\\b");
+
 
     int wordCountA = 0;
+    int wordCountB = 0;
+    int wordCountC = 0;
+    int wordCountD = 0;
 
     for(int i = 1; i < args.size(); ++i)
     {
@@ -99,15 +98,33 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
             // Step 1 get the file path
             QString filePath = args[i];
             qDebug() << filePath;
-            for(auto line : fileProcessor(filePath,out))
+            for(auto word : processFileToWords(filePath,out))
             {
-                qDebug() << line;
-                if(flagA && regexA.match(line).hasMatch())
+                qDebug() << word;
+                if(flagA && regexA.match(word).hasMatch())
                 {
                     wordCountA++;
                 }
+                if(flagB && regexB.match(word).hasMatch())
+                {
+                    wordCountB++;
+                }
+                if(flagC && regexC.match(word).hasMatch())
+                {
+                    qDebug() << "Matches C: " + word;
+                    wordCountC++;
+                }
+                if(flagD && regexD.match(word).hasMatch())
+                {
+                    qDebug() << "Matches D: " + word;
+                    wordCountD++;
+                }
+
             }
             qDebug() << wordCountA;
+            qDebug() << wordCountB;
+            qDebug() << wordCountC;
+            qDebug() << wordCountD;
         }
 
     }
