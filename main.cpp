@@ -5,8 +5,8 @@
 #include <QDir>
 
 void printHelpMessage();
-void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD, int &argumentCounter);
-void fileProcessor(int &argumentCounter, QStringList &args, QTextStream &text);
+void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD);
+QStringList fileProcessor(QFile& file, QTextStream& out);
 
 int main(int argc, char *argv[])
 {
@@ -36,13 +36,25 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
-void fileProcessor(int &argumentCounter, QStringList &args, QTextStream &text)
+QStringList fileProcessor(QFile& file, QTextStream& out)
 {
-    QFile file("");
+    QStringList lines;
+    if(!(file.open(QIODevice::ReadOnly | QIODevice::Text)))
+    {
+        out << "Cannot open file:" << file.errorString();
+        return lines;
+    }
 
+    QTextStream in(&file);
+    while(!in.atEnd())
+    {
+        lines << in.readLine();
+        qDebug() << lines;
+    }
+    return lines;
 }
 
-void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD, int &argumentCounter)
+void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool &flagC, bool &flagD)
 {
     QRegularExpression flagRegex("^-[a-d]+$");
     QRegularExpressionMatch flagMatch;
@@ -62,30 +74,17 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
                 flagC = true;
             if (args[i].contains("d"))
                 flagD = true;
-            ++argumentCounter;
         }
         else if (!(args[i].startsWith("-")))
         {
             // Step 1 get the file path
             QString filePath = args[i];
             qDebug() << filePath;
-            qDebug() << QDir::currentPath();
             // Step 2 check if the file name exists
             QFile file(filePath);
             if(file.exists()){
                 // Step 3 Read the file
-                if(!(file.open(QIODevice::ReadOnly | QIODevice::Text)))
-                {
-                    out << "Cannot open file:" << file.errorString();
-                    return;
-                }
-
-                QTextStream in(&file);
-                while(!in.atEnd())
-                {
-                    lines << in.readLine();
-                    qDebug() << lines;
-                }
+                fileProcessor(file,out);
             }
             else {
                 out << "File does not exist.";
