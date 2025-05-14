@@ -84,6 +84,7 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
                 while(!in.atEnd())
                 {
                     lines << in.readLine();
+                    qDebug() << lines;
                 }
             }
             else {
