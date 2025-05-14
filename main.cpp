@@ -39,7 +39,9 @@ int main(int argc, char *argv[])
 QStringList fileProcessor(QString& filePath, QTextStream& out)
 {
     QStringList lines;
+    QStringList words;
     QFile file(filePath);
+    QRegularExpression punctuationRegex("[\\\"']");
      // Step 2 check if the file name exists
     if(file.exists()){
         // Step 3 Read the file
@@ -50,12 +52,14 @@ QStringList fileProcessor(QString& filePath, QTextStream& out)
         }
 
         QTextStream in(&file);
-        while(!in.atEnd())
-        {
-            lines << in.readLine();
-            qDebug() << lines;
-        }
-        return lines;
+        QString content = in.readAll();
+        qDebug() << content;
+        content.replace(punctuationRegex, "");
+
+        words = content.split(QRegularExpression("\\s+"));
+        qDebug() << words;
+
+        return words;
 
     }
     else {
@@ -71,6 +75,10 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
     QRegularExpressionMatch flagMatch;
     QTextStream out(stdout);
     QStringList lines;
+
+    QRegularExpression regexA("\\b[A-Z][a-zA-Z]{4,}\\b");
+
+    int wordCountA = 0;
 
     for(int i = 1; i < args.size(); ++i)
     {
@@ -91,7 +99,15 @@ void determineCountingCriteria(QStringList &args,bool &flagA, bool &flagB, bool 
             // Step 1 get the file path
             QString filePath = args[i];
             qDebug() << filePath;
-            fileProcessor(filePath,out);
+            for(auto line : fileProcessor(filePath,out))
+            {
+                qDebug() << line;
+                if(flagA && regexA.match(line).hasMatch())
+                {
+                    wordCountA++;
+                }
+            }
+            qDebug() << wordCountA;
         }
 
     }
